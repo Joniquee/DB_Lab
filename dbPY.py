@@ -89,7 +89,6 @@ def delete_record_by_field(field, value):
                 writer.writerow(row)
             else:
                 del index[row["phone_number"]]
-                f.write("DELETED\n")
                 found = True
     if found:
         os.replace(TEMP_FILE, MAIN_FILE)
