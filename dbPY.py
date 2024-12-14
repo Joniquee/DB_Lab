@@ -10,6 +10,7 @@ import json
 MAIN_FILE = "database.csv"
 BACKUP_FILE = "backup.csv"
 TEMP_FILE = "temp.csv"
+BACKUP_INDEX = "indexb.json"
 FIELD_NAMES = ["name", "surname", "phone_number", "date_of_birth"]
 PK = "phone_number"
 index = {}
@@ -35,6 +36,7 @@ def create_database():
 
 def delete_database():
     try:
+        global index
         os.remove(MAIN_FILE)
         messagebox.showinfo("Success", "Database deleted.")
         refresh_file_list()
@@ -45,6 +47,7 @@ def delete_database():
         messagebox.showerror("Error", "Database file not found.")
 
 def clear_database():
+    global index
     with open(MAIN_FILE, "w", newline='') as f, open("index.json", 'w', newline='') as i:
         writer = csv.DictWriter(f, delimiter=";", quotechar='"', fieldnames=FIELD_NAMES)
         writer.writeheader()
@@ -53,14 +56,22 @@ def clear_database():
 
 def create_backup():
     try:
+        global index
         shutil.copy(MAIN_FILE, BACKUP_FILE)
+        with open(BACKUP_INDEX, 'a') as f:
+            json.dump(index, f, ensure_ascii=False, indent=4)
+            f.flush()
         messagebox.showinfo("Success", "Backup created.")
     except FileNotFoundError:
         messagebox.showerror("Error", "Database file not found. Cannot create backup.")
 
 def restore_backup():
     try:
+        global index
         shutil.copy(BACKUP_FILE, MAIN_FILE)
+        shutil.copy(BACKUP_INDEX, "index.json")
+        with open (BACKUP_INDEX, 'r', encoding='utf-8') as f:
+            index = json.load(f)
         messagebox.showinfo("Success", "Database restored from backup.")
     except FileNotFoundError:
         messagebox.showerror("Error", "Backup file not found. Cannot restore database.")
